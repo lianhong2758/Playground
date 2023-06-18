@@ -1,10 +1,54 @@
 package klala
 
+import (
+	"encoding/base64"
+	"errors"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"strconv"
+
+	"github.com/wdvxdr1123/ZeroBot/utils/helper"
+)
+
 const (
 	// nets = "https://mhy.fuckmys.tk/"
 	nets = "http://api.mihomo.me/"
 	path = "sr_info/"
 )
+
+func init() {
+	t, err := base64.StdEncoding.DecodeString(kkk)
+	if err != nil {
+		os.Exit(1)
+	}
+	cryptic = helper.BytesToString(t)
+}
+func getRole(uid string) (body []byte, err error) {
+	var client = &http.Client{}
+	req, err := http.NewRequest(http.MethodGet, nets+path+uid, nil)
+
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("User-Agent", cryptic)
+	req.Header.Add("Accept", "*/*")
+
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
+		return nil, errors.New("获取数据失败, Code: " + strconv.Itoa(res.StatusCode))
+	}
+	body, err = ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+	return
+}
 
 type info struct {
 	PlayerDetailInfo struct {
